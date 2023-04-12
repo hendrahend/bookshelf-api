@@ -3,14 +3,6 @@ const books = require('./books');
 
 const addBookHandler = (request, h) => {
   const {
-    name, year, author, summary, publisher, pageCount, readPage, reading,
-  } = request.payload;
-
-  const id = nanoid(10);
-  const insertedAt = new Date().toISOString();
-  const updatedAt = insertedAt;
-  const finished = pageCount === readPage;
-  const newBook = {
     name,
     year,
     author,
@@ -19,13 +11,7 @@ const addBookHandler = (request, h) => {
     pageCount,
     readPage,
     reading,
-    id,
-    insertedAt,
-    updatedAt,
-    finished,
-  };
-
-  books.push(newBook);
+  } = request.payload;
 
   if (name === undefined) {
     const response = h.response({
@@ -43,11 +29,33 @@ const addBookHandler = (request, h) => {
     response.code(400);
     return response;
   }
+
+  const id = nanoid(16);
+  const finished = pageCount === readPage;
+  const insertedAt = new Date().toISOString();
+  const updatedAt = insertedAt;
+
+  const newBook = {
+    name,
+    year,
+    author,
+    summary,
+    publisher,
+    pageCount,
+    readPage,
+    reading,
+    id,
+    finished,
+    insertedAt,
+    updatedAt,
+  };
+
+  books.push(newBook);
   const isSuccess = books.filter((book) => book.id === id).length > 0;
   if (isSuccess) {
     const response = h.response({
       status: 'success',
-      message: 'Buku berhasil di tambahkan',
+      message: 'Buku berhasil ditambahkan',
       data: {
         bookId: id,
       },
@@ -65,17 +73,15 @@ const addBookHandler = (request, h) => {
 
 const getAllBooksHandler = (request, h) => {
   const { name, reading, finished } = request.query;
-
   let filteredBooks = books;
-  if (name !== undefined) {
-    filteredBooks = filteredBooks.filter((book) => book.name.toLowerCase()
-      .includes(name.toLowerCase()));
-  }
 
+  if (name !== undefined) {
+    filteredBooks = filteredBooks.filter((book) => book
+      .name.toLowerCase().includes(name.toLowerCase()));
+  }
   if (reading !== undefined) {
     filteredBooks = filteredBooks.filter((book) => book.reading === !!Number(reading));
   }
-
   if (finished !== undefined) {
     filteredBooks = filteredBooks.filter((book) => book.finished === !!Number(finished));
   }
@@ -96,8 +102,8 @@ const getAllBooksHandler = (request, h) => {
 
 const getBookByIdHandler = (request, h) => {
   const { id } = request.params;
-
   const book = books.filter((b) => b.id === id)[0];
+
   if (book !== undefined) {
     return {
       status: 'success',
@@ -117,7 +123,14 @@ const getBookByIdHandler = (request, h) => {
 const editBookByIdHandler = (request, h) => {
   const { id } = request.params;
   const {
-    name, year, author, summary, publisher, pageCount, readPage, reading,
+    name,
+    year,
+    author,
+    summary,
+    publisher,
+    pageCount,
+    readPage,
+    reading,
   } = request.payload;
 
   const updatedAt = new Date().toISOString();
@@ -131,7 +144,6 @@ const editBookByIdHandler = (request, h) => {
       response.code(400);
       return response;
     }
-
     if (pageCount < readPage) {
       const response = h.response({
         status: 'fail',
@@ -140,9 +152,6 @@ const editBookByIdHandler = (request, h) => {
       response.code(400);
       return response;
     }
-
-    // eslint-disable-next-line no-unused-vars
-    const finished = pageCount === readPage;
 
     books[index] = {
       ...books[index],
@@ -156,6 +165,7 @@ const editBookByIdHandler = (request, h) => {
       reading,
       updatedAt,
     };
+
     const response = h.response({
       status: 'success',
       message: 'Buku berhasil diperbarui',
@@ -163,6 +173,7 @@ const editBookByIdHandler = (request, h) => {
     response.code(200);
     return response;
   }
+
   const response = h.response({
     status: 'fail',
     message: 'Gagal memperbarui buku. Id tidak ditemukan',
@@ -185,7 +196,6 @@ const deleteBookByIdHandler = (request, h) => {
     response.code(200);
     return response;
   }
-
   const response = h.response({
     status: 'fail',
     message: 'Buku gagal dihapus. Id tidak ditemukan',
